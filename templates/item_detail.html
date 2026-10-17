@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% block title %}{{ item.name }}{% endblock %}{% block content %}
+<p style="margin:0 0 18px"><a href="{{ url_for('items', kind=kind) }}">&larr; Back to {{ kind }} items</a></p>
+<article class="big {{ kind }}">
+  <div class="band"><span class="kindname">{{ 'Lost' if kind=='lost' else 'Found' }} report</span><span class="no">No. {{ '%04d'|format(item.id) }}</span></div>
+  <div class="inner {{ '' if item.image else 'noimg' }}">
+    {% if item.image %}<div class="pic"><img src="{{ url_for('static', filename='uploads/' ~ item.image) }}" alt="{{ item.name }}"></div>{% endif %}
+    <div>
+      <h1>{{ item.name }}</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill p-{{ kind }}">{{ kind|title }}</span><span class="pill p-{{ item.status }}">{{ item.status }}</span>
+        {% if item.stale %}<span class="pill p-stale">Pending 30+ days</span>{% endif %}</div>
+      <dl class="kv">
+        <dt>Category</dt><dd>{{ item.category or '-' }}</dd>
+        <dt>Description</dt><dd>{{ item.description or '-' }}</dd>
+        <dt>{{ 'Lost' if kind=='lost' else 'Found' }} at</dt><dd>{{ item.location or '-' }}</dd>
+        <dt>Date</dt><dd>{{ item.item_date }}</dd>
+        <dt>Reported on</dt><dd>{{ item.date_reported }}</dd>
+        {% if show_contact %}<dt>{{ 'Reporter' if kind=='lost' else 'Finder' }}</dt><dd>{{ item.person }} · {{ item.contact }}</dd>
+        {% else %}<dt>Contact</dt><dd class="reasons">Hidden. Send a claim request and the admin will connect you.</dd>{% endif %}
+      </dl>
+      <div class="actions">
+        {% if kind=='found' and not is_admin and item.status=='Pending' %}<a class="btn green" href="#claim">Claim this item</a>{% endif %}
+        {% if can_edit %}<a class="btn sm ghost" href="{{ url_for('edit_item', kind=kind, item_id=item.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('delete_item', kind=kind, item_id=item.id) }}" onsubmit="return confirm('Delete this report?')">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn sm red">Delete</button></form>{% endif %}
+        {% if is_admin %}
+        <form method="post" action="{{ url_for('change_status', kind=kind, item_id=item.id) }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="{{ 'Pending' if item.status=='Claimed' else 'Claimed' }}">
+          <button class="btn sm gray">Mark as {{ 'pending' if item.status=='Claimed' else 'claimed' }}</button></form>{% endif %}
+      </div>
+    </div>
+  </div>
+</article>
+
+{% if kind=='found' and not is_admin and item.status=='Pending' %}
+<div class="card claimbox" id="claim"><h2>Is this yours? Claim it here</h2>
+  {% if request_sent %}<p style="margin:0">You already sent a claim request for this item. Track it under <a href="{{ url_for('my_claims') }}">My claims</a>.</p>
+  {% else %}
+  <form method="post" action="{{ url_for('claim_request') }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="found_id" value="{{ item.id }}">
+    {% if my_lost %}<div class="field"><label for="lost_id">Link to your lost report (optional)</label><select id="lost_id" name="lost_id"><option value="">None</option>
+      {% for l in my_lost %}<option value="{{ l.id }}">#{{ l.id }} {{ l.name }}</option>{% endfor %}</select></div>{% endif %}
+    <div class="field"><label for="proof">Proof of ownership *</label><textarea id="proof" name="proof" rows="3" required minlength="10" placeholder="Something only the owner would know: marks, contents, wallpaper, serial number…"></textarea></div>
+    <button class="btn green">Send claim request</button>
+  </form>{% endif %}
+</div>
+{% endif %}
+
+{% if matches %}
+<div class="card"><h2>Possible matches</h2>
+  {% for m in matches %}{% set other = m.found if kind=='lost' else m.lost %}{% set okind = 'found' if kind=='lost' else 'lost' %}
+  <div class="pair">
+    <span class="score-line" style="color:{{ 'var(--found)' if m.score>=70 else 'var(--amber-ink)' }}">{{ m.score }}%</span>
+    <div><a href="{{ url_for('item_detail', kind=okind, item_id=other.id) }}"><b>{{ other.name }}</b></a>
+    <span class="reasons">{{ other.location or '-' }}, {{ other.item_date }}</span></div>
+    <div class="why">{{ m.reasons|join(' · ') }}</div></div>{% endfor %}
+</div>{% endif %}
+{% endblock %}

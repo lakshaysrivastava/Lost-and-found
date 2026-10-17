@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% block title %}Matches{% endblock %}{% block content %}
+<div class="pagehead">
+  <div><h1>Suggested matches</h1>
+  <p class="sub">Every pending lost report is scored against every pending found report: name, category, place, date gap and shared keywords.</p></div>
+  <form method="get" style="display:flex;gap:12px;align-items:center">
+    <label for="min" style="margin:0">Minimum score</label>
+    <select id="min" name="min" onchange="this.form.submit()" style="width:auto">{% for t in (20,40,60,80) %}<option value="{{ t }}" {{ 'selected' if t==threshold }}>{{ t }}% or more</option>{% endfor %}</select>
+  </form>
+</div>
+<p class="reasons" style="margin:-10px 0 22px">{{ matches|length }} candidate pair{{ '' if matches|length==1 else 's' }}</p>
+{% for m in matches %}{% set col = 'var(--found)' if m.score>=70 else ('var(--amber)' if m.score>=50 else 'var(--mute)') %}
+<div class="match">
+  <div class="ticket">
+    <div class="half l">
+      <span class="pill p-lost">Lost</span>
+      <h3><a href="{{ url_for('item_detail', kind='lost', item_id=m.lost.id) }}">{{ m.lost.name }}</a></h3>
+      <p class="reasons" style="margin:0">{{ m.lost.location or '-' }} · {{ m.lost.item_date }}<br>{{ m.lost.person }} ({{ m.lost.contact }})<br>{{ m.lost.description }}</p>
+    </div>
+    <div class="mid"><div class="disc"><span class="score" style="color:{{ col }}">{{ m.score }}%</span><small>match</small><div class="meter"><i style="width:{{ m.score }}%;background:{{ col }}"></i></div></div></div>
+    <div class="half f">
+      <span class="pill p-found">Found</span>
+      <h3><a href="{{ url_for('item_detail', kind='found', item_id=m.found.id) }}">{{ m.found.name }}</a></h3>
+      <p class="reasons" style="margin:0">{{ m.found.location or '-' }} · {{ m.found.item_date }}<br>{{ m.found.person }} ({{ m.found.contact }})<br>{{ m.found.description }}</p>
+    </div>
+  </div>
+  <form class="foot" method="post" action="{{ url_for('claim') }}">
+    <p class="why">{{ m.reasons|join(' · ') }}</p>
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="lost_id" value="{{ m.lost.id }}"><input type="hidden" name="found_id" value="{{ m.found.id }}">
+    <div class="row2"><input name="remarks" aria-label="Remarks" placeholder="Remarks (ID checked, handed over to…)">
+    <button class="btn green" onclick="return confirm('Mark this pair as returned?')">Confirm and return</button></div></form>
+</div>
+{% else %}<div class="card empty"><h2 style="justify-content:center">No pairs at {{ threshold }}%</h2>Try a lower minimum score.</div>{% endfor %}
+{% endblock %}

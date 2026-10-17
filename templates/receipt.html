@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}Return receipt{% endblock %}{% block content %}
+<div class="receipt">
+  <h1>Item return receipt</h1><p class="sub" style="text-align:center;margin:6px auto 0">No. <span class="no">{{ '%04d'|format(c.claim_id) }}</span> · {{ c.claim_date }}</p>
+  <div class="tear"></div>
+  <dl class="kv">
+    <dt>Lost item</dt><dd>{{ c.lost_name or '— (walk-in claim)' }}{% if c.lost_desc %}<br><span class="reasons">{{ c.lost_desc }}</span>{% endif %}</dd>
+    <dt>Owner</dt><dd>{{ c.reporter_name or '—' }} {{ ('· ' ~ c.reporter_contact) if c.reporter_contact }}</dd>
+    <dt>Found item</dt><dd>{{ c.found_name }}<br><span class="reasons">{{ c.found_desc }}</span></dd>
+    <dt>Found at</dt><dd>{{ c.location_found }} on {{ c.date_found }}</dd>
+    <dt>Found by</dt><dd>{{ c.founder_name }}</dd>
+    <dt>Match score</dt><dd>{{ (c.match_score ~ '%') if c.match_score is not none else 'n/a' }}</dd>
+    <dt>Handled by</dt><dd>{{ c.handled_by }}</dd><dt>Remarks</dt><dd>{{ c.remarks or '—' }}</dd>
+  </dl>
+  <div class="sign"><span>Owner signature</span><span>Admin signature</span></div>
+  <p class="noprint" style="text-align:center;margin:30px 0 0"><button class="btn" onclick="window.print()">Print receipt</button></p>
+</div>
+{% endblock %}

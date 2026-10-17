@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}{{ 'Edit' if item else 'Report' }} {{ kind }} item{% endblock %}{% block content %}
+{% set v = form if form else (item or {}) %}
+<div class="pagehead"><div><h1>{{ 'Edit' if item else 'Report a' }} {{ kind }} item</h1><p class="sub">The more detail you add, the easier it is to match. Fields marked * are required.</p></div></div>
+<article class="big {{ kind }}" style="max-width:860px">
+  <div class="band"><span class="kindname">{{ 'Lost' if kind=='lost' else 'Found' }} report</span><span class="no">{{ ('No. ' ~ '%04d'|format(item.id)) if item else 'New' }}</span></div>
+  <form method="post" enctype="multipart/form-data" style="padding:28px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="row">
+    <div class="field"><label for="name">Item name *</label><input id="name" name="name" maxlength="100" value="{{ v.name }}" required></div>
+    <div class="field"><label for="category">Category *</label><select id="category" name="category" required><option value="">Choose…</option>
+      {% for c in categories %}<option {{ 'selected' if v.category==c }}>{{ c }}</option>{% endfor %}</select></div>
+  </div>
+  <div class="field"><label for="description">Description</label><textarea id="description" name="description" rows="3" placeholder="Colour, brand, marks, contents">{{ v.description }}</textarea></div>
+  <div class="row">
+    <div class="field"><label for="location">Where was it {{ kind }}?</label><input id="location" name="location" value="{{ v.location }}" placeholder="Library, Block B…"></div>
+    <div class="field"><label for="item_date">Date *</label><input id="item_date" type="date" name="item_date" max="{{ today }}" value="{{ v.item_date or today }}" required></div>
+  </div>
+  <div class="row">
+    <div class="field"><label for="person">{{ 'Reporter' if kind=='lost' else 'Finder' }} name{{ ' *' if is_admin else '' }}</label>
+      <input id="person" name="person" value="{{ v.person }}" {{ 'required' if is_admin }} placeholder="{{ '' if is_admin else 'Defaults to your name' }}"></div>
+    <div class="field"><label for="contact">Contact (phone or email){{ ' *' if is_admin else '' }}</label>
+      <input id="contact" name="contact" value="{{ v.contact }}" {{ 'required' if is_admin }} placeholder="{{ '' if is_admin else 'Defaults to your profile' }}"></div>
+  </div>
+  <div class="field"><label for="image">Photo (optional, max 4 MB)</label><input id="image" type="file" name="image" accept="image/*">
+    {% if item and item.image %}<p class="hint">Current photo: <img class="thumb" src="{{ url_for('static', filename='uploads/' ~ item.image) }}" alt=""> Upload a new one to replace it.</p>{% endif %}</div>
+  <div class="actions"><button class="btn {{ 'green' if kind=='found' else 'lostbtn' }}">{{ 'Save changes' if item else 'Submit report' }}</button>
+  <a class="btn ghost" href="{{ url_for('items', kind=kind) }}">Cancel</a></div>
+</form></article>
+{% endblock %}

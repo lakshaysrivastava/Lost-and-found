@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Lost &amp; Found{% endblock %} · Lost &amp; Found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+{% if session.role %}
+<header class="top"><div class="in">
+  <a class="logo" href="{{ url_for('dashboard') }}"><i></i>Lost &amp; Found</a>
+  {% set ep = request.endpoint %}
+  <nav aria-label="Main">
+    <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep=='dashboard' }}">Dashboard</a>
+    <a href="{{ url_for('items', kind='lost') }}" class="{{ 'on' if request.path.startswith('/lost') }}">{{ 'My lost reports' if not is_admin else 'Lost' }}</a>
+    <a href="{{ url_for('items', kind='found') }}" class="{{ 'on' if request.path.startswith('/found') }}">Found</a>
+    {% if is_admin %}
+      <a href="{{ url_for('matches') }}" class="{{ 'on' if ep=='matches' }}">Matches</a>
+      <a href="{{ url_for('claims') }}" class="{{ 'on' if ep=='claims' }}">Claims</a>
+      <a href="{{ url_for('users') }}" class="{{ 'on' if ep=='users' }}">Users</a>
+      <a href="{{ url_for('activity') }}" class="{{ 'on' if ep=='activity' }}">Activity</a>
+    {% else %}
+      <a href="{{ url_for('my_claims') }}" class="{{ 'on' if ep=='my_claims' }}">My claims</a>
+    {% endif %}
+  </nav>
+  <div class="who">
+    <a href="{{ url_for('notifications') }}" aria-label="Notifications{% if unread %}, {{ unread }} unread{% endif %}"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>{% if unread %}<span class="badge">{{ unread }}</span>{% endif %}</a>
+    <a href="{{ url_for('profile') }}">{{ current_user }}</a>
+    <a href="{{ url_for('logout') }}">Log out</a>
+  </div>
+</div></header>
+{% endif %}
+<main class="{{ '' if session.role else 'guest' }}">
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}" role="status">{{ msg }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="foot {{ '' if session.role else 'guest' }}">Lost &amp; Found · every item gets a tag, every tag gets a way home.</footer>
+</body></html>

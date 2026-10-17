@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}Activity log{% endblock %}{% block content %}
+<div class="pagehead"><div><h1>Activity log</h1><p class="sub">The 200 most recent actions.</p></div></div>
+<div class="card tablewrap"><table><tr><th>When</th><th>Who</th><th>Action</th><th>Details</th></tr>
+{% for l in logs %}<tr><td class="no">{{ l.created_at }}</td><td>{{ l.actor }}</td><td><b>{{ l.action }}</b></td><td>{{ l.detail }}</td></tr>
+{% else %}<tr><td colspan="4" class="empty">No activity yet.</td></tr>{% endfor %}</table></div>
+{% endblock %}

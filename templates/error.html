@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}{{ code }}{% endblock %}{% block content %}
+<div class="errpage">
+  <div class="code">{% if code|string == '404' %}4<span></span>4{% else %}{{ code }}{% endif %}</div>
+  <p>{{ message }}</p>
+  <a class="btn" href="{{ url_for('login') }}">Back to home</a>
+</div>
+{% endblock %}

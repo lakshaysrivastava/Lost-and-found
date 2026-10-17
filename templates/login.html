@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}Sign in{% endblock %}{% block content %}
+<div class="welcome">
+  <section class="story">
+    <a class="logo" href="{{ url_for('login') }}"><i></i>Lost &amp; Found</a>
+    <div>
+      <h1>Lost something on campus?</h1>
+      <p>Report what you lost, browse what has been found, and claim it with proof.</p>
+    </div>
+    <div class="steps"><div><i></i>Report it</div><div><i></i>We match it</div><div><i></i>Claim it back</div></div>
+    <div class="hangtag" aria-hidden="true"><div class="string"></div>
+      <div class="t"><div class="band">Found</div><div class="txt">Black umbrella<small>Library, Block B</small></div></div></div>
+  </section>
+  <section class="formside">
+    <div class="stub">
+      <h1>Sign in</h1><p class="sub" style="margin:6px 0 0">College lost &amp; found portal</p>
+      <div class="perf"></div>
+      <form method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field"><label for="role">I am a</label>
+          <select id="role" name="role"><option value="student">Student / Staff</option><option value="admin">Administrator</option></select></div>
+        <div class="field"><label for="username">Username</label><input id="username" name="username" required autofocus autocomplete="username"></div>
+        <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
+        <button class="btn block">Sign in</button>
+      </form>
+      <p class="alt">New here? <a href="{{ url_for('register') }}">Create a student account</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

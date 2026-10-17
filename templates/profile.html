@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Profile{% endblock %}{% block content %}
+<div class="pagehead"><div><h1>My account</h1></div></div>
+<div class="grid g2" style="align-items:start">
+<div class="card"><h2>Details</h2><dl class="kv" style="margin:0"><dt>Role</dt><dd>{{ 'Administrator' if is_admin else 'Student / Staff' }}</dd>
+<dt>Username</dt><dd>{{ session.username }}</dd>
+{% if user %}<dt>Name</dt><dd>{{ user.full_name }}</dd><dt>Email</dt><dd>{{ user.email or '-' }}</dd><dt>Phone</dt><dd>{{ user.phone or '-' }}</dd>{% endif %}</dl></div>
+<div class="card"><h2>Change password</h2>
+<form method="post"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+<div class="field"><label for="op">Current password</label><input id="op" type="password" name="old_password" required></div>
+<div class="field"><label for="np">New password (6+ characters)</label><input id="np" type="password" name="new_password" required></div>
+<div class="field"><label for="cp">Confirm new password</label><input id="cp" type="password" name="confirm" required></div>
+<button class="btn">Update password</button></form></div>
+</div>
+{% endblock %}

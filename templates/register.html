@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}Register{% endblock %}{% block content %}
+<div class="welcome">
+  <section class="story">
+    <a class="logo" href="{{ url_for('login') }}"><i></i>Lost &amp; Found</a>
+    <div>
+      <h1>Get your own tag.</h1>
+      <p>An account lets you report lost items, track claims and get alerts when something matches.</p>
+    </div>
+    <div class="steps"><div><i></i>Report it</div><div><i></i>We match it</div><div><i></i>Claim it back</div></div>
+  </section>
+  <section class="formside">
+    <div class="stub wide">
+      <h1>Create account</h1><p class="sub" style="margin:6px 0 0">Report lost items and claim found ones.</p>
+      <div class="perf"></div>
+      <form method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field"><label for="full_name">Full name *</label><input id="full_name" name="full_name" value="{{ request.form.full_name }}" required></div>
+        <div class="row">
+          <div class="field"><label for="username">Username *</label><input id="username" name="username" value="{{ request.form.username }}" required></div>
+          <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" value="{{ request.form.phone }}"></div>
+        </div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ request.form.email }}"></div>
+        <div class="row">
+          <div class="field"><label for="password">Password * (6+ characters)</label><input id="password" name="password" type="password" required></div>
+          <div class="field"><label for="confirm">Confirm password *</label><input id="confirm" name="confirm" type="password" required></div>
+        </div>
+        <button class="btn block">Create account</button>
+      </form>
+      <p class="alt">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

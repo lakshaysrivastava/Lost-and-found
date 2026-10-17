@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% from "_macros.html" import tag with context %}{% block title %}{{ kind|title }} items{% endblock %}{% block content %}
+<div class="pagehead">
+  <div><h1>{{ 'Lost' if kind=='lost' else 'Found' }} items</h1>
+    <p class="sub">{{ pg.total }} report{{ '' if pg.total==1 else 's' }}{% if kind=='found' and not is_admin %} · find your item and send a claim request{% endif %}</p></div>
+  <div class="switch" role="tablist" aria-label="Item type">
+    <a class="lost {{ 'on' if kind=='lost' }}" href="{{ url_for('items', kind='lost') }}">Lost</a>
+    <a class="found {{ 'on' if kind=='found' }}" href="{{ url_for('items', kind='found') }}">Found</a>
+  </div>
+</div>
+<div class="card">
+<form class="filters" method="get">
+  <div><label for="q">Search</label><input id="q" name="q" value="{{ f.q }}" placeholder="Name, place or description"></div>
+  <div><label for="cat">Category</label><select id="cat" name="category"><option value="">All</option>{% for c in categories %}<option {{ 'selected' if f.category==c }}>{{ c }}</option>{% endfor %}</select></div>
+  <div><label for="st">Status</label><select id="st" name="status"><option value="">All</option><option {{ 'selected' if f.status=='Pending' }}>Pending</option><option {{ 'selected' if f.status=='Claimed' }}>Claimed</option></select></div>
+  <div><label for="df">From</label><input id="df" type="date" name="date_from" value="{{ f.date_from }}"></div>
+  <div><label for="dt">To</label><input id="dt" type="date" name="date_to" value="{{ f.date_to }}"></div>
+  <div><label for="so">Sort by</label><select id="so" name="sort">{% for v,t in (('newest','Newest'),('oldest','Oldest'),('name','Name A-Z'),('date','Item date')) %}<option value="{{ v }}" {{ 'selected' if f.sort==v }}>{{ t }}</option>{% endfor %}</select></div>
+  <div><button class="btn">Filter</button></div>
+</form></div>
+<p class="actions" style="margin:0 0 26px">
+  <a class="btn {{ 'green' if kind=='found' else 'lostbtn' }}" href="{{ url_for('new_item', kind=kind) }}">Report {{ kind }} item</a>
+  {% if is_admin %}<a class="btn ghost" href="{{ url_for('export_csv', name=kind) }}">Export CSV</a>{% endif %}
+  {% if kind=='found' and not is_admin %}<a class="btn ghost" href="{{ url_for('items', kind='found', mine=1) }}">Only my reports</a>{% endif %}
+</p>
+{% if rows %}
+<div class="tags">{% for r in rows %}{{ tag(r, kind) }}{% endfor %}</div>
+{% else %}<div class="card empty"><h2 style="justify-content:center">No reports match</h2>Try clearing a filter, or <a href="{{ url_for('new_item', kind=kind) }}">report a {{ kind }} item</a>.</div>{% endif %}
+{% if pg.pages > 1 %}<div class="pager">
+  {% if pg.page > 1 %}<a class="btn sm ghost" href="{{ url_for('items', kind=kind, page=pg.page-1, **args) }}">Previous</a>{% endif %}
+  <span>Page {{ pg.page }} of {{ pg.pages }}</span>
+  {% if pg.page < pg.pages %}<a class="btn sm ghost" href="{{ url_for('items', kind=kind, page=pg.page+1, **args) }}">Next</a>{% endif %}
+</div>{% endif %}
+{% endblock %}

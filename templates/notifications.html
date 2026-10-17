@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}Notifications{% endblock %}{% block content %}
+<div class="pagehead"><div><h1>Notifications</h1><p class="sub">Alerts about matches, claims and returns.</p></div></div>
+{% for n in rows %}<div class="card note {{ 'unread' if not n.is_read }}" style="margin-bottom:14px;padding:18px 22px">
+  <div class="grow">{{ n.message }}<div class="reasons">{{ n.created_at }}</div></div>{% if n.link %}<a class="btn sm ghost" href="{{ n.link }}">View</a>{% endif %}</div>
+{% else %}<div class="card empty"><h2 style="justify-content:center">You're all caught up</h2>New alerts will show up here.</div>{% endfor %}
+{% endblock %}

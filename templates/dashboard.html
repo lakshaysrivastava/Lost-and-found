@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block content %}
+<section class="welcome-band">
+  <div><h1>{{ 'Everything in one place.' if is_admin else 'Hi, ' ~ current_user ~ '.' }}</h1>
+    <p class="sub">{{ 'Overview of the whole system' if is_admin else 'Lost something? Found something? Start here.' }}</p></div>
+  <div class="ctas">
+    <a class="btn" href="{{ url_for('new_item', kind='lost') }}">Report lost item</a>
+    <a class="btn green" href="{{ url_for('new_item', kind='found') }}">Report found item</a>
+  </div>
+</section>
+
+<div class="ledger">
+  <div class="cell lost"><b>{{ stats.total_lost }}</b><span>Lost reports</span></div>
+  <div class="cell found"><b>{{ stats.total_found }}</b><span>Found reports</span></div>
+  <div class="cell pend"><b>{{ stats.lost_pending + stats.found_pending }}</b><span>Still pending</span></div>
+  <div class="cell"><div class="ring" style="--p:{{ stats.recovery_rate }}"><b>{{ stats.recovery_rate }}%</b></div><span>Of lost items returned</span></div>
+  {% if is_admin %}
+  <div class="cell"><b>{{ stats.claimed }}</b><span>Claimed (lost + found)</span></div>
+  <div class="cell pend"><b>{{ stats.pending_claims }}</b><span>Claim requests waiting</span></div>
+  <div class="cell"><b>{{ stats.stale }}</b><span>Pending over 30 days</span></div>
+  <div class="cell"><b>{{ stats.users }}</b><span>Registered students</span></div>
+  {% endif %}
+</div>
+
+{% if mine is not none %}
+<div class="card"><h2>My reports <a class="btn sm ghost" href="{{ url_for('items', kind='found') }}">Browse found items</a></h2>
+  {% for i in mine.lost %}<div class="mini"><span class="dot"></span><a href="{{ url_for('item_detail', kind='lost', item_id=i.id) }}">{{ i.name }}</a>
+    <span class="pill p-{{ i.status }}">{{ i.status }}</span></div>{% else %}<p class="sub" style="margin:0">Nothing yet. Lost something? Report it above.</p>{% endfor %}
+</div>
+{% endif %}
+
+{% if is_admin and matches %}
+<div class="card"><h2>Top suggested matches <a class="btn sm ghost" href="{{ url_for('matches') }}">See all</a></h2>
+  {% for m in matches %}<div class="pair"><span class="score-line" style="color:{{ 'var(--found)' if m.score>=70 else 'var(--amber-ink)' }}">{{ m.score }}%</span>
+    <a href="{{ url_for('item_detail', kind='lost', item_id=m.lost.id) }}"><b>{{ m.lost.name }}</b></a> <span class="reasons">matches</span>
+    <a href="{{ url_for('item_detail', kind='found', item_id=m.found.id) }}"><b>{{ m.found.name }}</b></a></div>{% endfor %}
+</div>
+{% endif %}
+
+<div class="grid g2">
+  <div class="card"><h2>Reports by category</h2>
+    {% for c in stats.categories %}<div class="bar"><span class="lbl">{{ c.category }}</span>
+      <span class="track"><span class="l" style="width:{{ 100*c.lost/max_cat }}%"></span><span class="f" style="width:{{ 100*c.found/max_cat }}%"></span></span>
+      <span class="n">{{ c.lost + c.found }}</span></div>
+    {% else %}<p class="sub">No data yet.</p>{% endfor %}
+    <div class="legend"><span><i style="background:var(--lost)"></i>Lost</span><span><i style="background:var(--found)"></i>Found</span></div>
+  </div>
+  <div class="card"><h2>Reports in the last 14 days</h2>
+    {% if stats.trend %}<div class="trend">{% for t in stats.trend %}
+      <div title="{{ t.day }}: {{ t.lost }} lost, {{ t.found }} found"><i style="height:{{ 100*t.lost/max_trend }}%"></i><i class="f" style="height:{{ 100*t.found/max_trend }}%"></i>{{ t.day[8:] }}</div>{% endfor %}</div>
+    {% else %}<p class="sub">No recent reports.</p>{% endif %}
+    <h2 style="margin:26px 0 6px">Hotspots</h2>
+    {% for h in stats.hotspots %}<div class="hot"><svg viewBox="0 0 24 24"><path d="M12 22s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>{{ h.location }}<b>{{ h.n }}</b></div>{% else %}<p class="sub" style="margin:0">None yet.</p>{% endfor %}
+  </div>
+</div>
+
+<div class="grid g2">
+  {% for kind, rows in (('lost', lost), ('found', found)) %}
+  <div class="card"><h2>Latest {{ kind }} reports <a class="btn sm ghost" href="{{ url_for('items', kind=kind) }}">View all</a></h2>
+    {% for r in rows %}<div class="mini"><span class="dot {{ kind }}"></span><a href="{{ url_for('item_detail', kind=kind, item_id=r.id) }}">{{ r.name }}</a>
+      <span class="reasons">{{ r.location or '' }}</span><span class="pill p-{{ r.status }}">{{ r.status }}</span></div>
+    {% else %}<p class="empty">Nothing yet</p>{% endfor %}</div>
+  {% endfor %}
+</div>
+{% endblock %}

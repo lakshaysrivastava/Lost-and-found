@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block title %}Claims{% endblock %}{% block content %}
+<div class="pagehead"><div><h1>Claims</h1><p class="sub">Review student claim requests and see the return history.</p></div></div>
+<div class="card"><h2>Pending requests ({{ pending|length }})</h2>
+  {% for r in pending %}<div class="claimreq">
+    <b>{{ r.full_name }}</b> <span class="reasons">({{ r.phone or r.email or 'no contact' }})</span> claims
+    <a href="{{ url_for('item_detail', kind='found', item_id=r.found_id) }}"><b>{{ r.found_name }}</b></a>
+    {% if r.lost_name %}<span class="reasons">· linked lost report: {{ r.lost_name }}</span>{% endif %}
+    <blockquote class="proof">{{ r.proof }}</blockquote>
+    <form method="post" action="{{ url_for('decide_claim', request_id=r.request_id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input name="remarks" aria-label="Remarks" placeholder="Remarks (optional)">
+      <button class="btn green sm" name="decision" value="approve">Approve</button>
+      <button class="btn red sm" name="decision" value="reject">Reject</button></form></div>
+  {% else %}<p class="sub" style="margin:0">No pending requests. You're all caught up.</p>{% endfor %}
+</div>
+<div class="card tablewrap"><h2>Return history <a class="btn sm ghost" href="{{ url_for('export_csv', name='claims') }}">Export CSV</a></h2><table>
+  <tr><th>No.</th><th>Date</th><th>Lost item</th><th>Found item</th><th>Score</th><th>Handled by</th><th>Remarks</th><th></th></tr>
+  {% for c in history %}<tr><td class="no">{{ '%04d'|format(c.claim_id) }}</td><td>{{ c.claim_date[:10] }}</td><td>{{ c.lost_name or '—' }}<br><span class="reasons">{{ c.reporter_name or '' }}</span></td>
+    <td>{{ c.found_name }}<br><span class="reasons">{{ c.location_found or '' }}</span></td><td>{{ (c.match_score ~ '%') if c.match_score is not none else '—' }}</td>
+    <td>{{ c.handled_by or '—' }}</td><td>{{ c.remarks or '' }}</td><td><a class="btn sm ghost" href="{{ url_for('receipt', claim_id=c.claim_id) }}">Receipt</a></td></tr>
+  {% else %}<tr><td colspan="8" class="empty">No returns yet.</td></tr>{% endfor %}</table></div>
+{% if decided %}<div class="card tablewrap"><h2>Decided requests</h2><table>
+  <tr><th>Student</th><th>Item</th><th>Decision</th><th>Remarks</th></tr>
+  {% for r in decided %}<tr><td>{{ r.full_name }}</td><td>{{ r.found_name }}</td><td><span class="pill p-{{ r.status }}">{{ r.status }}</span></td><td>{{ r.admin_remarks or '' }}</td></tr>{% endfor %}</table></div>{% endif %}
+{% endblock %}
